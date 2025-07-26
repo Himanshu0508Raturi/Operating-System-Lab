@@ -1,0 +1,26 @@
+# Operating Systems Lab – 5th Semester 👨‍💻🧠
+
+This repository contains practical programs related to the **Operating Systems Laboratory** for the **5th semester**. These programs demonstrate key OS concepts such as process management, file handling, inter-process communication, and scheduling algorithms.
+
+---
+
+## 📚 Contents
+
+| Sr. No | Program Description |
+|--------|---------------------|
+| 1      | Create a child process using `fork()` and print parent & child PIDs |
+| 2      | Program to count even numbers using parent, and odd numbers using child process |
+| 3      | Create an orphan process |
+| 4      | Create a zombie process |
+| 5      | File handling: Read user and friend details, compare lines |
+| 6      | Demonstrate `wait()` and `exit()` usage in process synchronization |
+| 7      | Scheduling algorithm simulations (FCFS, SJF, Round Robin, etc.) *(optional)* |
+
+---
+
+## 🛠️ How to Run
+
+### Using Linux (recommended)
+```bash
+gcc filename.c -o output
+./output
