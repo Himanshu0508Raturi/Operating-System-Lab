@@ -19,12 +19,12 @@ int main()
         execlp("ls", "ls", "-l", (char *)NULL);
         exit(0);
     }
-    else if (id1 == 1)
+    else if (id1 > 0)
     {
 
         wait(NULL);
         printf("Parent Process\n");
-        printf("First Child Completed");
+        printf("First Child Completed\n");
         printf("Parent PId: %d\n", getpid());   
 
         pid_t id2 = fork();

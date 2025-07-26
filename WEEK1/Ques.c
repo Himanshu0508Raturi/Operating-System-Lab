@@ -1,3 +1,5 @@
+// Given an array , the parent process should count even numbers while child process should count odd numbers in an array. The parent
+// process should executes first then child process. 
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
