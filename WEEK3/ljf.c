@@ -31,7 +31,7 @@ int main()
     for (int i = 0; i < n; i++)
     {
         scanf("%d", &p[i].burst_time);
-        p[i].pid = i + 1;
+        p[i].pid = i + 1; // Assign process ID
         p[i].is_completed = 0;
     }
 
@@ -46,54 +46,56 @@ int main()
 
     while (completed != n)
     {
-        int min_ind = -1;
-        int min_bt = INT_MAX;
+        int idx = -1;
+        int max_bt = -1;
 
         for (int i = 0; i < n; i++)
         {
             if (p[i].arr_time <= curr_time && p[i].is_completed == 0)
             {
-                if (p[i].burst_time < min_bt)
+                if (p[i].burst_time > max_bt)
                 {
-                    min_bt = p[i].burst_time;
-                    min_ind = i;
+                    max_bt = p[i].burst_time;
+                    idx = i;
                 }
-                else if (p[i].burst_time == min_bt)
+                if (p[i].burst_time == max_bt) 
                 {
-                    if (p[i].arr_time < p[min_ind].arr_time)
-                        min_ind = i;
+                    if (p[i].arr_time < p[idx].arr_time)
+                    {
+                        idx = i;
+                    }
                 }
             }
         }
 
-        if (min_ind != -1)
+        if (idx != -1)
         {
-            p[min_ind].start_time = curr_time;
-            p[min_ind].complete_time = p[min_ind].start_time + p[min_ind].burst_time;
-            p[min_ind].turn_ard_time = p[min_ind].complete_time - p[min_ind].arr_time;
-            p[min_ind].wait_time = p[min_ind].turn_ard_time - p[min_ind].burst_time;
-            p[min_ind].response_time = p[min_ind].start_time - p[min_ind].arr_time;
+            p[idx].start_time = curr_time;
+            p[idx].complete_time = p[idx].start_time + p[idx].burst_time;
+            p[idx].turn_ard_time = p[idx].complete_time - p[idx].arr_time;
+            p[idx].wait_time = p[idx].turn_ard_time - p[idx].burst_time;
+            p[idx].response_time = p[idx].start_time - p[idx].arr_time;
 
-            swt += p[min_ind].wait_time;
-            stat += p[min_ind].turn_ard_time;
-            sbt += p[min_ind].burst_time;
+            swt += p[idx].wait_time;
+            stat += p[idx].turn_ard_time;
+            sbt += p[idx].burst_time;
 
-            if (p[min_ind].complete_time > max_completion_time)
-                max_completion_time = p[min_ind].complete_time;
+            if (p[idx].complete_time > max_completion_time)
+                max_completion_time = p[idx].complete_time;
 
-            p[min_ind].is_completed = 1;
+            p[idx].is_completed = 1;
             completed++;
-            curr_time = p[min_ind].complete_time;
+            curr_time = p[idx].complete_time;
         }
         else
         {
-            curr_time++; // CPU idle
+            curr_time++;
         }
     }
 
     awt = swt / n;
     atat = stat / n;
-    cu = ((float)sbt / max_completion_time) * 100; // ✅ Fix float division
+    cu = ((float)sbt / max_completion_time) * 100; // Cast to float for correct division
     throughput = (float)n / max_completion_time;
 
     printf("\nPID\tAT\tBT\tST\tCT\tTAT\tWT\tRT\n");
@@ -105,10 +107,10 @@ int main()
                p[i].turn_ard_time, p[i].wait_time, p[i].response_time);
     }
 
-    printf("\nTotal Turn Around Time : %.2f\nAverage Turn Around Time : %.2f\n", stat, atat);
-    printf("Total Waiting Time : %.2f\nAverage Waiting Time : %.2f\n", swt, awt);
-    printf("CPU Utilization : %.2f%%\n", cu);
-    printf("Throughput : %.2f processes/unit time\n", throughput);
+    printf("\nTotal Turn Around Time : %f\nAverage Turn Around Time : %f\n", stat, atat);
+    printf("Total Waiting Time : %f\nAverage Waiting Time : %f\n", swt, awt);
+    printf("CPU Utilization : %f%%\n", cu);
+    printf("Throughput : %f processes/unit time\n", throughput);
 
     return 0;
 }

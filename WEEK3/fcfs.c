@@ -1,96 +1,108 @@
+// fcfs non-prremptive algo
 #include <stdio.h>
 #include <stdlib.h>
 typedef struct process
 {
     int pid;
-    int arr_time;
+    int arrival_time;
     int burst_time;
-    int start_time;
     int complete_time;
-    int turn_ard_time;
-    int wait_time;
+    int start_time;
     int response_time;
+    int turn_around_time;
+    int waiting_time;
 } process;
-int comapre(const void *p1, const void *p2)
+int compare(const void *p1, const void *p2)
 {
-    int a = ((struct process *)p1)->arr_time;
-    int b = ((struct process *)p2)->arr_time;
+    int a = ((process *)p1)->arrival_time;
+    int b = ((process *)p2)->arrival_time;
     if (a < b)
     {
         return -1;
     }
-    else
+    else if (a > b)
     {
         return 1;
+    }
+    else
+    {
+        return 0;
     }
 }
 int main()
 {
-    int n;
     float swt = 0, stat = 0;
-    float cu = 0, throughput = 0;
-    float awt = 0, atat = 0;
     int sbt = 0;
-
-    printf("Number Of Process:");
+    float awt = 0, atat = 0;
+    int n;
+    float cu = 0, throughput = 0;
+    printf("Enter Number of Processes: ");
     scanf("%d", &n);
     process p[n];
-    printf("\nBurst time: ");
+    printf("Burst Time: ");
     for (int i = 0; i < n; i++)
     {
-        int bt;
         scanf("%d", &p[i].burst_time);
+        p[i].pid = i + 1;
     }
-    printf("\nArrival time: ");
+    printf("Arrival Time: ");
     for (int i = 0; i < n; i++)
     {
-        int bt;
-        scanf("%d", &p[i].arr_time);
+        scanf("%d", &p[i].arrival_time);
     }
-    qsort((void *)p, n, sizeof(struct process), comapre);
+    qsort(p, n, sizeof(process), compare);
+
     for (int i = 0; i < n; i++)
     {
         if (i == 0)
         {
-            p[i].complete_time = p[i].arr_time + p[i].burst_time;
-        }
-        else if (p[i - 1].complete_time <= p[i].arr_time)
-        {
-            p[i].complete_time = p[i].arr_time + p[i].burst_time;
+            p[i].start_time = p[i].arrival_time;
         }
         else
         {
-            p[i].complete_time = p[i - 1].complete_time - p[i].burst_time;
+            if (p[i - 1].complete_time > p[i].arrival_time)
+            {
+                p[i].start_time = p[i - 1].complete_time;
+            }
+            else
+            {
+                p[i].start_time = p[i].arrival_time;
+            }
         }
-        p[i].turn_ard_time = p[i].complete_time - p[i].arr_time;
-        p[i].wait_time = p[i].turn_ard_time - p[i].burst_time;
+        p[i].complete_time = p[i].burst_time + p[i].start_time;
+        p[i].turn_around_time = p[i].complete_time - p[i].arrival_time;
+        p[i].waiting_time = p[i].turn_around_time - p[i].burst_time;
+        p[i].response_time = p[i].start_time - p[i].arrival_time;
 
+        swt += p[i].waiting_time;
         sbt += p[i].burst_time;
-        swt += p[i].wait_time;
-        stat += p[i].turn_ard_time;
-        p[i].response_time = p[i].wait_time;
+        stat += p[i].turn_around_time;
     }
     awt = swt / n;
     atat = stat / n;
-    float max;
-    for (int i = 0; i < n; i++)
+
+    float max_ct = p[0].complete_time;
+    for (int i = 1; i < n; i++)
     {
-        p[i].start_time = p[i].response_time + p[i].arr_time;
-        max = 0;
-        if (p[i].complete_time > max)
+        if (p[i].complete_time > max_ct)
         {
-            max = p[i].complete_time;
+            max_ct = p[i].complete_time;
         }
     }
-
-    cu = (sbt / max) * 100;
-    throughput = n / max;
-    printf("\nPID\tAT\tBT\tST\tCT\tTAT\t\tWT\t\tRT\n");
+    cu = ((float)sbt / max_ct) * 100;
+    throughput = n / max_ct;
+    printf("\nPID\tAT\tBT\tST\tCT\tTAT\tWT\tRT\n");
     for (int i = 0; i < n; i++)
     {
-        printf("P % d\t % d\t % d\t % d\t % d\t % f\t % f\t % d\n", p[i].pid, p[i].arr_time, p[i].burst_time, p[i].start_time, p[i].complete_time, p[i].turn_ard_time, p[i].wait_time, p[i].response_time);
+        printf("P%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n",
+               p[i].pid, p[i].arrival_time, p[i].burst_time,
+               p[i].start_time, p[i].complete_time,
+               p[i].turn_around_time, p[i].waiting_time, p[i].response_time);
     }
-    printf("\nSum of Turn Around Time : % f\nAverage of Turn Around Time : % f\n", stat, atat);
-    printf("Sum of Waiting Time : % f\nAverage of Waiting Time : % f\nCPU utilization is : % f\nThroughput : % f", swt, awt, cu, throughput);
+
+    printf("\nSum of Turn Around Time : %.2f\nAverage Turn Around Time : %.2f\n", stat, atat);
+    printf("Sum of Waiting Time : %.2f\nAverage Waiting Time : %.2f\n", swt, awt);
+    printf("CPU Utilization : %.2f%%\nThroughput : %.2f\n", cu, throughput);
+
     return 0;
 }
