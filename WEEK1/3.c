@@ -25,7 +25,7 @@ int main()
         wait(NULL);
         printf("Parent Process\n");
         printf("First Child Completed\n");
-        printf("Parent PId: %d\n", getpid());   
+        printf("Parent PId: %d\n", getpid());
 
         pid_t id2 = fork();
         if (id2 < 0)
@@ -38,7 +38,7 @@ int main()
             printf("Child Process 2\n");
             sleep(5);
             printf("Child PID: %d\n", getpid());
-            exit(0); 
+            exit(0);
         }
         else
         {

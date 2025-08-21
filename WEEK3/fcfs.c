@@ -99,6 +99,12 @@ int main()
                p[i].start_time, p[i].complete_time,
                p[i].turn_around_time, p[i].waiting_time, p[i].response_time);
     }
+    printf("\nGantt Chart : ");
+    for (int i = 0; i < n; i++)
+    {
+        printf("P%d ", p[i].pid - 1); // if you want P0, P1... instead of P1, P2...
+    }
+    printf("\n");
 
     printf("\nSum of Turn Around Time : %.2f\nAverage Turn Around Time : %.2f\n", stat, atat);
     printf("Sum of Waiting Time : %.2f\nAverage Waiting Time : %.2f\n", swt, awt);

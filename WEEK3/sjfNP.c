@@ -43,7 +43,8 @@ int main()
 
     int completed = 0, curr_time = 0;
     float max_completion_time = 0;
-
+    int gantt[n];
+    int g_ind = 0;
     while (completed != n)
     {
         int min_ind = -1;
@@ -81,6 +82,7 @@ int main()
             if (p[min_ind].complete_time > max_completion_time)
                 max_completion_time = p[min_ind].complete_time;
 
+            gantt[g_ind++] = p[min_ind].pid;
             p[min_ind].is_completed = 1;
             completed++;
             curr_time = p[min_ind].complete_time;
@@ -93,7 +95,7 @@ int main()
 
     awt = swt / n;
     atat = stat / n;
-    cu = ((float)sbt / max_completion_time) * 100; // ✅ Fix float division
+    cu = ((float)sbt / max_completion_time) * 100;
     throughput = (float)n / max_completion_time;
 
     printf("\nPID\tAT\tBT\tST\tCT\tTAT\tWT\tRT\n");
@@ -104,7 +106,11 @@ int main()
                p[i].start_time, p[i].complete_time,
                p[i].turn_ard_time, p[i].wait_time, p[i].response_time);
     }
-
+    printf("\nGantt Chart : ");
+    for (int i = 0; i < n; i++)
+    {
+        printf("P%d ", gantt[i]); // if you want P0, P1... instead of P1, P2...
+    }
     printf("\nTotal Turn Around Time : %.2f\nAverage Turn Around Time : %.2f\n", stat, atat);
     printf("Total Waiting Time : %.2f\nAverage Waiting Time : %.2f\n", swt, awt);
     printf("CPU Utilization : %.2f%%\n", cu);

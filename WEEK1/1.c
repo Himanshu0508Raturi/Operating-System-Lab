@@ -1,25 +1,21 @@
+#include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 int main()
 {
-    // Create a child process
-    pid_t pid = fork();
-
-    if (pid < 0)
+    int x = fork();
+    if (x == 0)
     {
-        // Fork failed
-        printf("Fork failed!\n");
-        return 1;
+        printf("child is created with id %d\n", getpid());
     }
-    else if (pid == 0)
+    else if (x < 0)
     {
-        // This is the child process
-        printf("Child Process PID: %d\n", getpid());
+        printf("child not created");
     }
     else
     {
-        // This is the parent process
-        printf("Parent Process PID: %d, Child PID: %d\n", getpid(), pid);
+        sleep(1);
+        printf("parent created\n");
     }
     return 0;
 }
