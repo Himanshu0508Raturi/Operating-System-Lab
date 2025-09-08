@@ -124,6 +124,6 @@ int main()
 
     printf("\n\nAverage Waiting Time: %.2f", total_wt / n);
     printf("\nAverage Turnaround Time: %.2f\n", total_tat / n);
-    
+
     return 0;
 }
