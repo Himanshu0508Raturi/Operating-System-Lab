@@ -7,7 +7,6 @@ typedef struct process
     int pid;
     int arr_time;
     int burst_time;
-    int priority;
     int start_time;
     int complete_time;
     int turn_ard_time;
@@ -15,6 +14,7 @@ typedef struct process
     int response_time;
     int is_completed;
 } process;
+
 int main()
 {
     int n;
@@ -22,45 +22,43 @@ int main()
     float cu = 0, throughput = 0;
     float awt = 0, atat = 0;
     int sbt = 0;
-    printf("Enter Number of Process: ");
+
+    printf("Number Of Process: ");
     scanf("%d", &n);
     process p[n];
+
     printf("\nBurst time: ");
     for (int i = 0; i < n; i++)
     {
         scanf("%d", &p[i].burst_time);
-        p[i].pid = i + 1;
+        p[i].pid = i + 1; // Assign process ID
         p[i].is_completed = 0;
     }
+
     printf("\nArrival time: ");
     for (int i = 0; i < n; i++)
     {
         scanf("%d", &p[i].arr_time);
     }
-    printf("\nPriority (lower number = higher priority): ");
-    for (int i = 0; i < n; i++)
-    {
-        scanf("%d", &p[i].priority);
-    }
 
     int completed = 0, curr_time = 0;
-    int gant[n], g_ind = 0;
     float max_completion_time = 0;
 
     while (completed != n)
     {
         int idx = -1;
-        int highest_priority = INT_MAX;
+        int max_bt = -1;
+
         for (int i = 0; i < n; i++)
         {
             if (p[i].arr_time <= curr_time && p[i].is_completed == 0)
             {
-                if (p[i].priority < highest_priority)
+                if (p[i].burst_time > max_bt)
                 {
-                    highest_priority = p[i].priority;
+                    max_bt = p[i].burst_time;
                     idx = i;
                 }
-                if (p[i].priority == highest_priority)
+                if (p[i].burst_time == max_bt)
                 {
                     if (p[i].arr_time < p[idx].arr_time)
                     {
@@ -84,15 +82,10 @@ int main()
 
             if (p[idx].complete_time > max_completion_time)
                 max_completion_time = p[idx].complete_time;
-            gant[g_ind++] = p[idx].pid;
+
             p[idx].is_completed = 1;
             completed++;
-            // curr_time = p[idx].complete_time;
-            // ⬇️ Add context switch time if not last process
-            if (completed < n)
-                curr_time = p[idx].complete_time + 2;
-            else
-                curr_time = p[idx].complete_time;
+            curr_time = p[idx].complete_time;
         }
         else
         {
@@ -102,18 +95,14 @@ int main()
 
     awt = swt / n;
     atat = stat / n;
-    cu = ((float)sbt / max_completion_time) * 100;
+    cu = ((float)sbt / max_completion_time) * 100; // Cast to float for correct division
     throughput = (float)n / max_completion_time;
-    printf("gantt Chart\n");
+
+    printf("\nPID\tAT\tBT\tST\tCT\tTAT\tWT\tRT\n");
     for (int i = 0; i < n; i++)
     {
-        printf("P%d ", gant[i]);
-    }
-    printf("\nPID\tAT\tBT\tPRI\tST\tCT\tTAT\tWT\tRT\n");
-    for (int i = 0; i < n; i++)
-    {
-        printf("P%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n",
-               p[i].pid, p[i].arr_time, p[i].burst_time, p[i].priority,
+        printf("P%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n",
+               p[i].pid, p[i].arr_time, p[i].burst_time,
                p[i].start_time, p[i].complete_time,
                p[i].turn_ard_time, p[i].wait_time, p[i].response_time);
     }

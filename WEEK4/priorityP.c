@@ -75,6 +75,10 @@ int main()
 
         if (idx != -1)
         {
+            if (g_index > 0 && gantt[g_index - 1] != p[idx].pid)
+            {
+                curr_time += 2; // add context switch delay
+            }
             if (p[idx].rem_time == p[idx].burst_time)
                 p[idx].start_time = curr_time; // first execution
 

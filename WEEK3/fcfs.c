@@ -1,4 +1,4 @@
-// fcfs non-prremptive algo
+// fcfs non-prreemptive algo
 #include <stdio.h>
 #include <stdlib.h>
 typedef struct process

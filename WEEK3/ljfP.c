@@ -1,3 +1,4 @@
+// LRTF (Longest Remaining Time First) Scheduling Algorithm - Non Preemptive
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
@@ -13,6 +14,7 @@ typedef struct process
     int wait_time;
     int response_time;
     int is_completed;
+    int remaining_time;
 } process;
 
 int main()
@@ -33,6 +35,7 @@ int main()
         scanf("%d", &p[i].burst_time);
         p[i].pid = i + 1; // Assign process ID
         p[i].is_completed = 0;
+        p[i].remaining_time = p[i].burst_time;
     }
 
     printf("\nArrival time: ");
@@ -43,7 +46,7 @@ int main()
 
     int completed = 0, curr_time = 0;
     float max_completion_time = 0;
-
+    int gant[n] , g_ind = 0;
     while (completed != n)
     {
         int idx = -1;
@@ -53,12 +56,12 @@ int main()
         {
             if (p[i].arr_time <= curr_time && p[i].is_completed == 0)
             {
-                if (p[i].burst_time > max_bt)
+                if (p[i].remaining_time > max_bt)
                 {
-                    max_bt = p[i].burst_time;
+                    max_bt = p[i].remaining_time;
                     idx = i;
                 }
-                if (p[i].burst_time == max_bt) 
+                if (p[i].remaining_time == max_bt)
                 {
                     if (p[i].arr_time < p[idx].arr_time)
                     {
@@ -70,22 +73,30 @@ int main()
 
         if (idx != -1)
         {
-            p[idx].start_time = curr_time;
-            p[idx].complete_time = p[idx].start_time + p[idx].burst_time;
-            p[idx].turn_ard_time = p[idx].complete_time - p[idx].arr_time;
-            p[idx].wait_time = p[idx].turn_ard_time - p[idx].burst_time;
-            p[idx].response_time = p[idx].start_time - p[idx].arr_time;
+            if(p[idx].remaining_time == p[idx].burst_time)
+            {
+                p[idx].start_time = curr_time;
+            }
+            gant[g_ind++] = p[idx].pid;
+            curr_time++;
+            p[idx].remaining_time--;
+            if(p[idx].remaining_time == 0)
+            {
+                p[idx].complete_time = p[idx].start_time + p[idx].burst_time;
+                p[idx].turn_ard_time = p[idx].complete_time - p[idx].arr_time;
+                p[idx].wait_time = p[idx].turn_ard_time - p[idx].burst_time;
+                p[idx].response_time = p[idx].start_time - p[idx].arr_time;
 
-            swt += p[idx].wait_time;
-            stat += p[idx].turn_ard_time;
-            sbt += p[idx].burst_time;
+                swt += p[idx].wait_time;
+                stat += p[idx].turn_ard_time;
+                sbt += p[idx].burst_time;
 
-            if (p[idx].complete_time > max_completion_time)
-                max_completion_time = p[idx].complete_time;
+                if (p[idx].complete_time > max_completion_time)
+                    max_completion_time = p[idx].complete_time;
 
-            p[idx].is_completed = 1;
-            completed++;
-            curr_time = p[idx].complete_time;
+                p[idx].is_completed = 1;
+                completed++;
+            }
         }
         else
         {

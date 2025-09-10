@@ -1,10 +1,10 @@
 #include <stdio.h>
 
 // Structure to represent resources (3 types: a, b, c)
-struct Resource
+typedef struct Resource
 {
     int a, b, c;
-};
+} Resource;
 
 int main()
 {
@@ -22,21 +22,21 @@ int main()
         return 0;
     }
 
-    struct Resource max[p], alloc[p], need[p];
-    struct Resource total, avail;
+    Resource max_need[p], already_allocated[p], remaining_need[p];
+    Resource total, avail;
 
     // Input maximum requirement matrix
     printf("Enter maximum requirement : \n");
     for (int i = 0; i < p; i++)
     {
-        scanf("%d %d %d", &max[i].a, &max[i].b, &max[i].c);
+        scanf("%d %d %d", &max_need[i].a, &max_need[i].b, &max_need[i].c);
     }
 
     // Input allocated matrix
     printf("Enter allocated matrix : \n");
     for (int i = 0; i < p; i++)
     {
-        scanf("%d %d %d", &alloc[i].a, &alloc[i].b, &alloc[i].c);
+        scanf("%d %d %d", &already_allocated[i].a, &already_allocated[i].b, &already_allocated[i].c);
     }
 
     // Input total resources
@@ -49,17 +49,17 @@ int main()
     avail.c = total.c;
     for (int i = 0; i < p; i++)
     {
-        avail.a -= alloc[i].a;
-        avail.b -= alloc[i].b;
-        avail.c -= alloc[i].c;
+        avail.a -= already_allocated[i].a;
+        avail.b -= already_allocated[i].b;
+        avail.c -= already_allocated[i].c;
     }
 
     // Calculate Need = Max - Alloc
     for (int i = 0; i < p; i++)
     {
-        need[i].a = max[i].a - alloc[i].a;
-        need[i].b = max[i].b - alloc[i].b;
-        need[i].c = max[i].c - alloc[i].c;
+        remaining_need[i].a = max_need[i].a - already_allocated[i].a;
+        remaining_need[i].b = max_need[i].b - already_allocated[i].b;
+        remaining_need[i].c = max_need[i].c - already_allocated[i].c;
     }
 
     // Banker's Algorithm
@@ -77,15 +77,15 @@ int main()
             if (!finish[i])
             {
                 // Check if need <= avail
-                if (need[i].a <= avail.a &&
-                    need[i].b <= avail.b &&
-                    need[i].c <= avail.c)
+                if (remaining_need[i].a <= avail.a &&
+                    remaining_need[i].b <= avail.b &&
+                    remaining_need[i].c <= avail.c)
                 {
 
                     // Pretend to allocate
-                    avail.a += alloc[i].a;
-                    avail.b += alloc[i].b;
-                    avail.c += alloc[i].c;
+                    avail.a += already_allocated[i].a;
+                    avail.b += already_allocated[i].b;
+                    avail.c += already_allocated[i].c;
 
                     safeSeq[count++] = i;
                     finish[i] = 1;
@@ -100,7 +100,7 @@ int main()
     // Output
     if (count < p)
     {
-        printf("Request cannot be fulfilled\n");
+        printf("System is in UNSAFE state. No safe sequence exists.\n");
     }
     else
     {
