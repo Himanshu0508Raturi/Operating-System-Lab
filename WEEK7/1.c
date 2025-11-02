@@ -2,7 +2,7 @@
 
 void enqueue(int q[], int *front, int *rear, int v, int n)
 {
-    if (*rear == n - 1)
+    if (*rear - *front + 1 == n)
     {
         printf("Queue is full\n");
         return;
@@ -85,16 +85,12 @@ int main()
         int page = pages[i];
         printf("Request for page %d -> ", page);
 
-        // If page not in queue
         if (!isPresent(q, front, rear, page))
         {
             pageFaults++;
 
-            // If queue not full
-            if (rear - front + 1 < n && rear != n - 1)
-            {
+            if (front == -1 || rear - front + 1 < n)
                 enqueue(q, &front, &rear, page, n);
-            }
             else
             {
                 dequeue(q, &front, &rear);
@@ -107,7 +103,6 @@ int main()
         {
             printf("Page Hit Frames: ");
         }
-
         display(q, front, rear);
     }
 
