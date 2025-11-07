@@ -1,70 +1,58 @@
-#include <stdio.h>
 
-typedef struct array
+#include <stdio.h>
+#include <stdbool.h>
+
+typedef struct file
 {
-    char process_name[50];
-    int startindex;
-    int length;
-} array;
+    char name;
+    int start_block;
+    int no_of_blocks;
+} file;
 
 int main()
 {
+    bool blocks[1000] = {true};
     int n;
-    printf("Enter the number of processes: ");
+    printf("Enter the number of files:");
     scanf("%d", &n);
-
-    array arr[n];
-    int memoryblock[100] = {0};
+    file files[n];
     for (int i = 0; i < n; i++)
     {
-        printf("\nEnter process name: ");
-        scanf("%s", arr[i].process_name);
-
-        printf("Enter start index: ");
-        scanf("%d", &arr[i].startindex);
-
-        printf("Enter length: ");
-        scanf("%d", &arr[i].length);
-
-        int start = arr[i].startindex;
-        int length = arr[i].length;
-
-        if (start + length > 100)
+        getchar();
+        printf("Enter the name of file %d:", i + 1);
+        scanf("%c", &files[i].name);
+        printf("Enter the starting block of file %d:", i + 1);
+        scanf("%d", &files[i].start_block);
+        printf("Enter the no of blocks of file %d:", i + 1);
+        scanf("%d", &files[i].no_of_blocks);
+        int st = files[i].start_block;
+        for (int j = 0; j < files[i].no_of_blocks; j++)
         {
-            printf(" Memory out of range for process %s!\n", arr[i].process_name);
-            continue;
+            blocks[st++] = false;
         }
-
-        int freeFlag = 1;
-        for (int j = start; j < start + length; j++)
-        {
-            if (memoryblock[j] == 1)
-            {
-                freeFlag = 0;
-                break;
-            }
-        }
-
-        if (freeFlag == 0)
-        {
-            printf("Blocks already allocated! Cannot allocate to process %s.\n", arr[i].process_name);
-            continue;
-        }
-
-        for (int j = start; j <= start + length; j++)
-        {
-            memoryblock[j] = 1;
-        }
-
-        printf(" Allocated memory to process %s from index %d to %d.\n",
-               arr[i].process_name, start, start + length);
     }
-
-    printf("\nMemory status (1 = allocated, 0 = free):\n");
-    for (int i = 0; i < 100; i++)
+    char ch;
+    getchar();
+    printf("Enter the name of file to be searched:");
+    scanf("%c", &ch);
+    bool found = false;
+    for (int i = 0; i < n; i++)
     {
-        printf("%d ", memoryblock[i]);
+        if (files[i].name == ch)
+        {
+            printf("File Name      : %c\n", files[i].name);
+            printf("Start Block    : %d\n", files[i].start_block);
+            printf("No. of Blocks  : %d\n", files[i].no_of_blocks);
+            printf("Blocks Occupied: ");
+            int st = files[i].start_block;
+            for (int j = 0; j < files[i].no_of_blocks; j++)
+            {
+                printf("%d ", st++);
+            }
+            found = true;
+            break;
+        }
     }
-
-    return 0;
+    if (!found)
+        printf("File not found");
 }
