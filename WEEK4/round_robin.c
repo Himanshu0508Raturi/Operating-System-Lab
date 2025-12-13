@@ -1,159 +1,91 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <limits.h>
-#include <stdbool.h> //for bool datatype
-#include <stdlib.h>  //for qsort
-struct process_struct
+
+typedef struct
 {
-    int pid;
-    int at;
-    int bt;
-    int ct, wt, tat, rt, start_time;
-    int bt_remaining;
-} ps[100];
-int findmax(int a, int b)
-{
-    return a > b ? a : b;
-}
-int comparatorAT(const void *a, const void *b)
-{
-    int x = ((struct process_struct *)a)->at;
-    int y = ((struct process_struct *)b)->at;
-    if (x < y)
-        return -1;   // No sorting
-    else if (x >= y) // = is for stable sort
-        return 1;    // Sort
-}
-int comparatorPID(const void *a, const void *b)
-{
-    int x = ((struct process_struct *)a)->pid;
-    int y = ((struct process_struct *)b)->pid;
-    if (x < y)
-        return -1; // No sorting
-    else if (x >= y)
-        return 1; // Sort
-}
+    int pid, at, bt, bt_remaining, start_time, ct, tat, wt, rt;
+} Process;
+
 int main()
 {
-    int n, index;
-    int cpu_utilization;
-    // queue<int> q;
-    bool visited[100] = {false}, is_first_process = true;
-    int current_time = 0, max_completion_time;
-    int completed = 0, tq, total_idle_time = 0, length_cycle;
-    printf("Enter total number of processes: ");
+    int n, tq;
+    printf("Enter number of processes: ");
     scanf("%d", &n);
-    int queue[100], front = -1, rear = -1;
-    float sum_tat = 0, sum_wt = 0, sum_rt = 0;
+
+    Process p[100];
     for (int i = 0; i < n; i++)
     {
-        printf("\nEnter Process %d Arrival Time: ", i);
-        scanf("%d", &ps[i].at);
-        ps[i].pid = i;
+        printf("Process %d - Arrival: ", i);
+        scanf("%d", &p[i].at);
+        p[i].pid = i;
+        printf("Burst: ");
+        scanf("%d", &p[i].bt);
+        p[i].bt_remaining = p[i].bt;
     }
-
-    for (int i = 0; i < n; i++)
-    {
-        printf("\nEnter Process %d Burst Time: ", i);
-        scanf("%d", &ps[i].bt);
-        ps[i].bt_remaining = ps[i].bt;
-    }
-
-    printf("\nEnter time quanta: ");
+    printf("Time quantum: ");
     scanf("%d", &tq);
+    int current_time = 0, completed = 0;
+    int queue[100], front = 0, rear = 0;
+    queue[rear++] = 0; // Start with first process
 
-    // sort structure on the basis of Arrival time in increasing order
-    qsort((void *)ps, n, sizeof(struct process_struct), comparatorAT);
-    // q.push(0);
-    front = rear = 0;
-    queue[rear] = 0;
-    visited[0] = true;
-
-    while (completed != n)
+    while (completed < n)
     {
-        index = queue[front];
-        // q.pop();
-        front++;
+        int idx = queue[front++];
 
-        if (ps[index].bt_remaining == ps[index].bt)
-        {
-            ps[index].start_time = findmax(current_time, ps[index].at);
-            total_idle_time += (is_first_process == true) ? 0 : ps[index].start_time - current_time;
-            current_time = ps[index].start_time;
-            is_first_process = false;
-        }
+        // Set start time for first execution
+        if (p[idx].bt_remaining == p[idx].bt)
+            p[idx].start_time = (current_time < p[idx].at) ? p[idx].at : current_time;
 
-        if (ps[index].bt_remaining - tq > 0)
+        // Execute for time quantum or remaining time
+        int exec_time = (p[idx].bt_remaining > tq) ? tq : p[idx].bt_remaining;
+        current_time += exec_time;
+        p[idx].bt_remaining -= exec_time;
+
+        // If completed
+        if (p[idx].bt_remaining == 0)
         {
-            ps[index].bt_remaining -= tq;
-            current_time += tq;
+            completed++;
+            p[idx].ct = current_time;
+            p[idx].tat = p[idx].ct - p[idx].at;
+            p[idx].wt = p[idx].tat - p[idx].bt;
+            p[idx].rt = p[idx].start_time - p[idx].at;
         }
         else
         {
-            current_time += ps[index].bt_remaining;
-            ps[index].bt_remaining = 0;
-            completed++;
-            ps[index].ct = current_time;
-            ps[index].tat = ps[index].ct - ps[index].at;
-            ps[index].wt = ps[index].tat - ps[index].bt;
-            ps[index].rt = ps[index].start_time - ps[index].at;
-            sum_tat += ps[index].tat;
-            sum_wt += ps[index].wt;
-            sum_rt += ps[index].rt;
+            // Push back to queue
+            queue[rear++] = idx;
         }
-        // check which new Processes needs to be pushed to Ready Queue from Input list
-        for (int i = 1; i < n; i++)
+
+        // Add new arrivals to queue
+        for (int i = 0; i < n; i++)
         {
-            if (ps[i].bt_remaining > 0 && ps[i].at <= current_time && visited[i] == false)
-            {
-                // q.push(i);
-                queue[++rear] = i;
-                visited[i] = true;
-            }
-        }
-        // check if Process on CPU needs to be pushed to Ready Queue
-        if (ps[index].bt_remaining > 0)
-        { // q.push(index);
-            queue[++rear] = index;
-        }
-        // if queue is empty, just add one process from list, whose remaining burst time > 0
-        if (front > rear)
-        {
-            for (int i = 1; i < n; i++)
-            {
-                if (ps[i].bt_remaining > 0)
-                {
+            if (p[i].bt_remaining > 0 && p[i].at <= current_time && i != idx)
+                if (front > rear || queue[rear - 1] != i) // Avoid duplicate
                     queue[rear++] = i;
-                    visited[i] = true;
-                    break;
-                }
-            }
         }
-    } // end of while
-
-    // Calculate Length of Process completion cycle
-    max_completion_time = INT_MIN;
-
+    }
+    // Calculate metrics
+    float avg_tat = 0, avg_wt = 0, avg_rt = 0, throughput = 0;
+    int max_ct = 0;
     for (int i = 0; i < n; i++)
     {
-        max_completion_time = findmax(max_completion_time, ps[i].ct);
+        avg_tat += p[i].tat;
+        avg_wt += p[i].wt;
+        avg_rt += p[i].rt;
+        if (p[i].ct > max_ct)
+            max_ct = p[i].ct;
+        printf("P%d: AT=%d BT=%d ST=%d CT=%d TAT=%d WT=%d RT=%d\n",
+               p[i].pid, p[i].at, p[i].bt, p[i].start_time, p[i].ct,
+               p[i].tat, p[i].wt, p[i].rt);
     }
-    length_cycle = max_completion_time - ps[0].at; // ps[0].start_time;
 
-    cpu_utilization = (float)(length_cycle - total_idle_time) / length_cycle;
-
-    // sort so that process ID in output comes in Original order (just for interactivity- Not needed otherwise)
-    qsort((void *)ps, n, sizeof(struct process_struct), comparatorPID);
-    // Output
-    printf("\nProcess No.\tAT\tCPU Burst Time\tStart Time\tCT\tTAT\tWT\tRT\n");
-    for (int i = 0; i < n; i++)
-    {
-        printf("%d\t\t%d\t%d\t\t%d\t\t%d\t%d\t%d\t%d\n", i, ps[i].at, ps[i].bt, ps[i].start_time, ps[i].ct, ps[i].tat, ps[i].wt, ps[i].rt);
-    }
-    printf("\n");
-    printf("\nAverage Turn Around time= %.2f", (float)sum_tat / n);
-    printf("\nAverage Waiting Time= %.2f", (float)sum_wt / n);
-    printf("\nAverage Response Time= %.2f", (float)sum_rt / n);
-    printf("\nThroughput= %.2f", n / (float)length_cycle);
-    printf("\nCPU Utilization(Percentage)= %.2lf", cpu_utilization * 100);
+    avg_tat /= n;
+    avg_wt /= n;
+    avg_rt /= n;
+    throughput = n / (float)max_ct;
+    printf("\nAvg TAT=%.2f Avg WT=%.2f Avg RT=%.2f\n", avg_tat, avg_wt, avg_rt);
+    printf("Throughput=%.2f CPU Util=%.1f%%\n", throughput,
+           (max_ct - p[0].at) / (float)max_ct * 100);
     return 0;
 }

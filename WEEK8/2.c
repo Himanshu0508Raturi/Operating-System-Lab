@@ -1,45 +1,50 @@
 #include <stdio.h>
 
-int main()
+int main(void)
 {
-    int b, p;
-    printf("Enter number of free blocks available : ");
-    scanf("%d", &b);
+    int blocks, processes;
 
-    int block[b];
-    for (int i = 0; i < b; i++)
-        scanf("%d", &block[i]);
+    printf("Enter number of free blocks: ");
+    scanf("%d", &blocks);
 
-    printf("Enter number of processes : ");
-    scanf("%d", &p);
+    int free_blocks[blocks];
+    for (int i = 0; i < blocks; i++)
+        scanf("%d", &free_blocks[i]);
 
-    int process[p];
-    for (int i = 0; i < p; i++)
-        scanf("%d", &process[i]);
+    printf("Enter number of processes: ");
+    scanf("%d", &processes);
 
-    int allocated[p];
-    for (int i = 0; i < p; i++)
-        allocated[i] = -1;
+    int proc_sizes[processes];
+    for (int i = 0; i < processes; i++)
+        scanf("%d", &proc_sizes[i]);
 
-    for (int i = 0; i < p; i++)
+    int allocation[processes];
+    for (int i = 0; i < processes; i++)
+        allocation[i] = -1;
+
+    // FIRST FIT: take first block that fits
+    for (int i = 0; i < processes; i++)
     {
-        for (int j = 0; j < b; j++)
+        for (int j = 0; j < blocks; j++)
         {
-            if (block[j] >= process[i])
+            if (free_blocks[j] >= proc_sizes[i])
             {
-                allocated[i] = j;
-                block[j] -= process[i];
-                break;
+                allocation[i] = j;
+                free_blocks[j] -= proc_sizes[i];
+                break; // stop at FIRST match
             }
         }
     }
 
-    for (int i = 0; i < p; i++)
+    // Print results
+    printf("\nProcess | Block\n");
+    printf("--------|------\n");
+    for (int p = 0; p < processes; p++)
     {
-        if (allocated[i] != -1)
-            printf("%d - %d\n", process[i], allocated[i] + 1);
+        if (allocation[p] != -1)
+            printf("%d     | %d\n", proc_sizes[p], allocation[p] + 1);
         else
-            printf("%d  no free block allocated\n", process[i]);
+            printf("%d     | Not allocated\n", proc_sizes[p]);
     }
 
     return 0;

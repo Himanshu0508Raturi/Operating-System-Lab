@@ -2,78 +2,59 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <unistd.h>
-#include <stdlib.h>
-#include <time.h>
 
-#define N 5 // number of philosophers and chopsticks
+#define N 5 // philosophers = chopsticks
 
-sem_t chopstick[N]; // one semaphore per chopstick
+sem_t chopstick[N];
 
-void *philosopher(void *num)
+void *philosopher(void *arg)
 {
-    int id = *(int *)num;
+    int id = *(int *)arg;
+    int left = id;
+    int right = (id + 1) % N;
+
+    // Order to avoid deadlock: always take lower id first
+    int first = left < right ? left : right;
+    int second = left < right ? right : left;
 
     while (1)
     {
-        // Thinking phase
-        printf("Philosopher %d is thinking\n", id);
-        sleep(rand() % 3 + 1); // random think time
+        // think
+        printf("Philo %d is thinking\n", id);
+        sleep(1);
 
-        int left = id;
-        int right = (id + 1) % N;
+        // take chopsticks
+        sem_wait(&chopstick[first]);
+        sem_wait(&chopstick[second]);
 
-        // Try to pick up left chopstick
-        if (sem_trywait(&chopstick[left]) == 0)
-        {
-            // Try to pick up right chopstick
-            if (sem_trywait(&chopstick[right]) == 0)
-            {
-                printf("Philosopher %d is eating using chopsticks %d and %d\n", id, left, right);
-                sleep(rand() % 2 + 1); // eating time
+        // eat
+        printf("Philo %d is eating with %d & %d\n", id, left, right);
+        sleep(1);
 
-                // Release both chopsticks
-                sem_post(&chopstick[left]);
-                sem_post(&chopstick[right]);
-                printf("Philosopher %d has released chopsticks %d and %d\n", id, left, right);
-            }
-            else
-            {
-                // Couldn't get right chopstick, release left one
-                sem_post(&chopstick[left]);
-                printf("Philosopher %d released chopstick %d since right chopstick %d is unavailable\n",
-                       id, left, right);
-            }
-        }
-        else
-        {
-            printf("Philosopher %d couldn't pick left chopstick %d, will try again\n", id, left);
-        }
+        // put down chopsticks
+        sem_post(&chopstick[second]);
+        sem_post(&chopstick[first]);
 
-        usleep(200); // small delay to reduce CPU usage
+        printf("Philo %d finished eating\n", id);
     }
 
-    pthread_exit(NULL);
+    return NULL;
 }
 
-int main()
+int main(void)
 {
     pthread_t tid[N];
-    int ids[N];
+    int id[N];
 
-    srand(time(NULL)); // randomize sleep durations
-
-    // Initialize semaphores (1 means available)
     for (int i = 0; i < N; i++)
         sem_init(&chopstick[i], 0, 1);
 
-    // Create philosopher threads
     for (int i = 0; i < N; i++)
     {
-        ids[i] = i;
-        pthread_create(&tid[i], NULL, philosopher, &ids[i]);
+        id[i] = i;
+        pthread_create(&tid[i], NULL, philosopher, &id[i]);
     }
 
-    // Wait (threads run infinitely)
     for (int i = 0; i < N; i++)
         pthread_join(tid[i], NULL);
 

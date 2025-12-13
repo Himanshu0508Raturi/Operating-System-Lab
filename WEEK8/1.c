@@ -1,50 +1,62 @@
 #include <stdio.h>
 
-int main()
+int main(void)
 {
-    int b, p;
-    printf("Enter number of free blocks available : ");
-    scanf("%d", &b);
+    int blocks, processes;
 
-    int block[b];
-    for (int i = 0; i < b; i++)
-        scanf("%d", &block[i]);
+    printf("Enter number of free blocks: ");
+    scanf("%d", &blocks);
 
-    printf("Enter number of processes : ");
-    scanf("%d", &p);
+    int free_blocks[blocks];
+    for (int i = 0; i < blocks; i++)
+        scanf("%d", &free_blocks[i]);
 
-    int process[p];
-    for (int i = 0; i < p; i++)
-        scanf("%d", &process[i]);
+    printf("Enter number of processes: ");
+    scanf("%d", &processes);
 
-    int allocated[p];
-    for (int i = 0; i < p; i++)
-        allocated[i] = -1;
+    int proc_sizes[processes];
+    for (int i = 0; i < processes; i++)
+        scanf("%d", &proc_sizes[i]);
 
-    for (int i = 0; i < p; i++)
+    // -1 means not allocated
+    int allocation[processes];
+    for (int i = 0; i < processes; i++)
+        allocation[i] = -1;
+
+    // For each process, find BEST FIT block
+    for (int i = 0; i < processes; i++)
     {
-        int bestIdx = -1;
-        for (int j = 0; j < b; j++)
+        int best_block = -1;
+        int best_size = 999999; // track smallest suitable block
+
+        // Scan all blocks for best fit
+        for (int j = 0; j < blocks; j++)
         {
-            if (block[j] >= process[i])
+            if (free_blocks[j] >= proc_sizes[i] &&
+                free_blocks[j] < best_size)
             {
-                if (bestIdx == -1 || block[j] < block[bestIdx])
-                    bestIdx = j;
+                best_block = j;
+                best_size = free_blocks[j];
             }
         }
-        if (bestIdx != -1)
+
+        // Allocate if found
+        if (best_block != -1)
         {
-            allocated[i] = bestIdx;
-            block[bestIdx] -= process[i];
+            allocation[i] = best_block;
+            free_blocks[best_block] -= proc_sizes[i];
         }
     }
 
-    for (int i = 0; i < p; i++)
+    // Print results
+    printf("\nProcess Size | Block Number\n");
+    printf("--------------------------------\n");
+    for (int p = 0; p < processes; p++)
     {
-        if (allocated[i] != -1)
-            printf("%d - %d\n", process[i], allocated[i] + 1);
+        if (allocation[p] != -1)
+            printf("%d          | %d\n", proc_sizes[p], allocation[p] + 1);
         else
-            printf("%d no free block allocated\n", process[i]);
+            printf("%d          | Not Allocated\n", proc_sizes[p]);
     }
 
     return 0;

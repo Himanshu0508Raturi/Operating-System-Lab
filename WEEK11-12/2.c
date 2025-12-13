@@ -1,69 +1,58 @@
-
 #include <stdio.h>
 #include <stdlib.h>
-#define LOW 0
-#define HIGH 199
-int main()
+
+int main(void)
 {
-    int queue[20];
-    int head, max, q_size, temp, sum;
-    int dloc; // location of disk (head) arr
-    printf("%s\t", "Input no of disk locations");
-    scanf("%d", &q_size);
-    printf("%s\t", "Enter head position");
-    scanf("%d", &head);
-    printf("%s\n", "Input elements into disk queue");
-    for (int i = 0; i < q_size; i++)
-    {
-        scanf("%d", &queue[i]);
-    }
-    queue[q_size] = head; // add RW head into queue
-    q_size++;
-    // sort the array
-    for (int i = 0; i < q_size; i++)
-    {
-        for (int j = i; j < q_size; j++)
-        {
-            if (queue[i] > queue[j])
+    int n, head = 50, disk_size = 200;
+    printf("Enter number of requests: ");
+    scanf("%d", &n);
+    
+    int requests[100];
+    printf("Enter request sequence: ");
+    for (int i = 0; i < n; i++)
+        scanf("%d", &requests[i]);
+    
+    // Step 1: Sort requests (ascending order)
+    for (int i = 0; i < n - 1; i++)
+        for (int j = 0; j < n - i - 1; j++)
+            if (requests[j] > requests[j + 1])
             {
-                temp = queue[i];
-                queue[i] = queue[j];
-                queue[j] = temp;
+                int temp = requests[j];
+                requests[j] = requests[j + 1];
+                requests[j + 1] = temp;
             }
-        }
-    }
-    max = queue[q_size - 1];
-    for (int i = 0; i < q_size; i++)
+    
+    // Step 2: Find first request >= head
+    int right_start = 0;
+    while (right_start < n && requests[right_start] < head)
+        right_start++;
+    
+    int total_seek = 0;
+    int pos = head;
+    
+    // Step 3: SCAN RIGHT (head -> end)
+    for (int i = right_start; i < n; i++)
     {
-        if (head == queue[i])
-        {
-            dloc = i;
-            break;
-        }
+        total_seek += abs(requests[i] - pos);
+        pos = requests[i];
     }
-    if (abs(head - LOW) <= abs(head - HIGH))
+    
+    // Step 4: Go to disk end
+    total_seek += abs((disk_size - 1) - pos);
+    pos = disk_size - 1;
+    
+    // Step 5: SCAN LEFT (end -> head)
+    for (int i = right_start - 1; i >= 0; i--)
     {
-        for (int j = dloc; j >= 0; j--)
-        {
-            printf("%d --> ", queue[j]);
-        }
-        for (int j = dloc + 1; j < q_size; j++)
-        {
-            printf("%d --> ", queue[j]);
-        }
+        total_seek += abs(requests[i] - pos);
+        pos = requests[i];
     }
-    else
-    {
-        for (int j = dloc + 1; j < q_size; j++)
-        {
-            printf("%d --> ", queue[j]);
-        }
-        for (int j = dloc; j >= 0; j--)
-        {
-            printf("%d --> ", queue[j]);
-        }
-    }
-    sum = head + max;
-    printf("\nmovement of total cylinders %d", sum);
+    
+    printf("Total seek movement: %d\n", total_seek);
     return 0;
 }
+/*
+1. Sort requests: small → large
+2. RIGHT: head → rightmost request → disk_end
+3. LEFT:  disk_end → leftmost request
+*/

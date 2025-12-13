@@ -1,58 +1,65 @@
-
 #include <stdio.h>
 #include <stdbool.h>
 
-typedef struct file
+typedef struct
 {
     char name;
-    int start_block;
-    int no_of_blocks;
-} file;
+    int start;
+    int blocks;
+} File;
 
-int main()
+int main(void)
 {
-    bool blocks[1000] = {true};
+    bool disk[1000]; // true = free, false = allocated
+    for (int i = 0; i < 1000; i++)
+        disk[i] = true;
+
     int n;
-    printf("Enter the number of files:");
+    printf("Enter number of files: ");
     scanf("%d", &n);
-    file files[n];
+
+    File files[n];
+
+    // Input files and mark blocks as allocated
     for (int i = 0; i < n; i++)
     {
-        getchar();
-        printf("Enter the name of file %d:", i + 1);
-        scanf("%c", &files[i].name);
-        printf("Enter the starting block of file %d:", i + 1);
-        scanf("%d", &files[i].start_block);
-        printf("Enter the no of blocks of file %d:", i + 1);
-        scanf("%d", &files[i].no_of_blocks);
-        int st = files[i].start_block;
-        for (int j = 0; j < files[i].no_of_blocks; j++)
-        {
-            blocks[st++] = false;
-        }
+        printf("File %d - Name: ", i + 1);
+        scanf(" %c", &files[i].name); // space clears input buffer
+
+        printf("Start block: ");
+        scanf("%d", &files[i].start);
+        printf("Number of blocks: ");
+        scanf("%d", &files[i].blocks);
+
+        // Mark blocks as occupied
+        for (int j = 0; j < files[i].blocks; j++)
+            disk[files[i].start + j] = false;
     }
-    char ch;
-    getchar();
-    printf("Enter the name of file to be searched:");
-    scanf("%c", &ch);
+
+    // Search for file
+    char search;
+    printf("Enter file name to search: ");
+    scanf(" %c", &search);
+
     bool found = false;
     for (int i = 0; i < n; i++)
     {
-        if (files[i].name == ch)
+        if (files[i].name == search)
         {
-            printf("File Name      : %c\n", files[i].name);
-            printf("Start Block    : %d\n", files[i].start_block);
-            printf("No. of Blocks  : %d\n", files[i].no_of_blocks);
-            printf("Blocks Occupied: ");
-            int st = files[i].start_block;
-            for (int j = 0; j < files[i].no_of_blocks; j++)
-            {
-                printf("%d ", st++);
-            }
+            printf("\nFile '%c' found:\n", search);
+            printf("Start Block: %d\n", files[i].start);
+            printf("Blocks: %d\n", files[i].blocks);
+            printf("Blocks occupied: ");
+            for (int j = 0; j < files[i].blocks; j++)
+                printf("%d ", files[i].start + j);
+            printf("\n");
             found = true;
             break;
         }
     }
+
     if (!found)
-        printf("File not found");
+        printf("File '%c' not found\n", search);
+
+    return 0;
 }
