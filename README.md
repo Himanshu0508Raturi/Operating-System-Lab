@@ -39,3 +39,4 @@ g++ filename.cpp -o output
 
 ## Author
 Himanshu — OS Lab submissions and notes
+Himanshu Raturi [![LinkedIn](https://img.shields.io/badge/LinkedIn-Profile-blue?style=for-the-badge&logo=linkedin)](https://www.linkedin.com/in/himanshu-raturi/)
